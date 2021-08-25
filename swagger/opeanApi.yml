@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info: 
+  title: Service for products page
+  version: 1.0.0
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: integer
+    Error:
+      type: string
