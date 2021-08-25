@@ -1,0 +1,49 @@
+service: lmbd1
+
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: eu-west-1
+
+package:
+  individually: true
+  patterns:
+    - "!**"
+    - "./dist"
+
+functions:
+  getProductsById:
+    handler: dist/getProductsById.getProductsById
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/getProductsById.js"
+    events:
+      - http:
+          method: get
+          path: /products/{productId}
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+            allowCredentials: false
+
+  getProductList:
+    handler: dist/getProductList.getProductList
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/getProductList.js"
+    events:
+      - http:
+          method: get
+          path: /products
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+            allowCredentials: false
