@@ -1,38 +1,31 @@
 import { ProductsService } from "./products.service";
-import { createOKResponce, createNotFoundResponce, requestDTO } from "../../utils/lambda-responce";
+import { Log } from "../../utils/log.decorator";
+import { Product } from "../../dto/product.dto";
+import { StatusCode } from "../../utils/status-code.decorator";
+import { Body } from "../../utils/body.decorator";
 
 export class ProductsController {
   private productsService: ProductsService = new ProductsService();
 
-  /**
-   * GET /products/{productId}
-   * @summary Return a product by ID.
-   * @description Return a product by ID. ID interval [1, 8].
-   * @pathParam {string} productId - Numeric ID of the product to get.
-   * @response 200 - A JSON product
-   * @responseContent {Product} 200.application/json
-   * @response 404 - A user with the specified ID was not found.
-   * @responseContent {Error} 404.application/json
-   */
-  public async getProductsById(id: string): Promise<requestDTO> {
+  @Log()
+  @StatusCode()
+  public async getProductsById(id: string): Promise<any> {
     const product = await this.productsService.findProductById(id);
-
-    if (product === undefined) {
-      return createNotFoundResponce('Product not found');
-    }
-
-    return createOKResponce(product);
+    return product;
   }
 
- /**
-   * GET /products
-   * @summary Return a list of products.
-   * @description Return a list of products.
-   * @response 200 - A JSON array of products
-   * @responseContent {Product[]} 200.application/json
-   */
-  public async getProductsList(): Promise<requestDTO> {
+  @Log()
+  @StatusCode()
+  public async getProductsList(): Promise<any> {
     const prductList = await this.productsService.getAllProducts();
-    return createOKResponce(prductList);
+    return prductList;
+  }
+
+  @Log()
+  @StatusCode()
+  // @Body()
+  public async addProduct(product: Omit<Product, "id">): Promise<any> {
+    const productId = await this.productsService.addProduct(product);
+    return { productId };
   }
 }

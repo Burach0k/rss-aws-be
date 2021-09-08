@@ -1,62 +1,39 @@
-import { Product } from "src/dto/product.dto";
+import { DataBase } from "../../db";
+import { Product } from "../../dto/product.dto";
 
 export class ProductsService {
-  private products: Product[] = [
-    {
-      id: '1',
-      title: 'Пластырь для похудения пупка',
-      description: 'Пластырь для похудения пупка нужная трендовая вещь. Вы можете есть, сколько хотите, но пупок всегда будет в форме благодаря пластырю Slim Patch.',
-      price: 10
-    },
-    {
-      id: '2',
-      title: 'Плюшевые безопасности',
-      description: 'Плюшевые безопасности – это одеяло с подогревом, теплое и уютное название. А главное, что ну очень актуально уже сейчас, когда за окном ноябрьские снега.',
-      price: 2
-    },
-    {
-      id: '3',
-      title: 'Принцесса кровать',
-      description: 'Принцесса кровать для ваших питомцев, такое название хорошо звучит. Продает!',
-      price: 100
-    },
-    {
-      id: '4',
-      title: 'леди натурального меха',
-      description: 'Словосочетание «леди натурального меха» вводит в заблуждение и неоднозначно звучит.',
-      price: 45
-    },
-    {
-      id: '5',
-      title: 'Две пьесы и кружева',
-      description: 'Две пьесы и кружева очень по-чеховски, красиво. Но непонятно, откуда взялись пьесы и почему выдалбливают топ…',
-      price: 31
-    },
-    {
-      id: '6',
-      title: 'новый пользовательский человек футбол',
-      description: 'Можно сказать просто футбольная форма с вашим логотипом, а можно изысканно – новый пользовательский человек футбол. Звучит!',
-      price: 228
-    },
-    {
-      id: '7',
-      title: 'гитара челюсти',
-      description: 'Товар гитара челюсти вызывает ассоциации и воспоминания из одноименного фильма. Но это всего лишь зажим для гитары.',
-      price: 210
-    },
-    {
-      id: '8',
-      title: 'Сексуальные бедра женщин',
-      description: 'Сексуальные бедра женщин тоже теперь доступны. А, еще и вспышка нога!',
-      price: 999
-    }
-  ];
 
-  public async findProductById(id: string): Promise<Product | undefined> {
-    return this.products.find((product) => product.id === id);
+  public findProductById(id: string): Promise<Product | undefined> {
+    return DataBase.query<Product>(`
+      SELECT PRODUCTS.id, PRODUCTS.title, PRODUCTS.description, PRODUCTS.price, STOCKS.count 
+      FROM PRODUCTS
+      INNER JOIN STOCKS ON STOCKS.product_id = PRODUCTS.id
+      WHERE PRODUCTS.id = $1
+      ORDER BY title LIMIT 1;`, [id]
+    ).then(result => result.rows[0]);
   }
 
-  public async getAllProducts(): Promise<Product[]> {
-    return this.products;
+  public getAllProducts(): Promise<Product[]> {
+    return DataBase.query<Product>(`
+      SELECT PRODUCTS.id, PRODUCTS.title, PRODUCTS.description, PRODUCTS.price, STOCKS.count 
+      FROM PRODUCTS
+      INNER JOIN STOCKS ON STOCKS.product_id = PRODUCTS.id
+      ORDER BY title;`
+    ).then(result => result.rows);
+  }
+
+  public addProduct({ title, description, price, count = 0 }: Omit<Product, "id">): Promise<number> {
+    return DataBase.query<{ product_id: number }>(`
+      WITH product as (
+        INSERT INTO PRODUCTS (id, title, description, price)
+        VALUES(uuid_generate_v1(), $1, $2, $3)
+        RETURNING id
+      )
+      INSERT INTO STOCKS (product_id, count)
+      VALUES(
+        (SELECT product.id FROM product), $4
+      ) RETURNING product_id;`,
+      [title, description, price, count]
+    ).then(result => result.rows[0].product_id);
   }
 }

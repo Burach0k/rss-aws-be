@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
 const lambdasDir = path.join(__dirname, 'src/lambdas');
@@ -28,7 +29,12 @@ module.exports = {
         ]
       },
     ],
-  }
+  },
+  plugins: [
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^pg-native$/,
+    }),
+  ]
 };
 
 function findLambdaFilesPath() {

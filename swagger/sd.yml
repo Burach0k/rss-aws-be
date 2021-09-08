@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Products API
+  description: Products API
+
+servers:
+  - url: https://371xfc78x4.execute-api.eu-west-1.amazonaws.com/dev/
+
+security:
+  - BasicAuth: []
+
+paths:
+  /products:
+    get:
+      description: Returns a product
+      parameters:
+        - name: q1
+          in: query
+          required: true
+          description: uuid of product
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      responses:
+        '200':
+          description: Successfully returned a product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  discription:
+                    type: string
+                  price:
+                    type: integer
+                  count:
+                    type: integer
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    Artist:
+      type: object
+      required:
+        - username
+      properties:
+        artist_name:
+          type: string
+        artist_genre:
+            type: string
+        albums_recorded:
+            type: integer
+        username:
+            type: string
+
+  #  ----- Added lines  ----------------------------------------
+  parameters:
+    PageLimit:
+      name: limit
+      in: query
+      description: Limits the number of items on a page
+      schema:
+        type: integer
+      
+    PageOffset:
+      name: offset
+      in: query
+      description: Specifies the page number of the artists to be displayed
+      schema:
+        type: integer
+
+  responses:
+    400Error:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object 
+            properties:
+              message:
+                type: string
+  #  ---- /Added lines  ----------------------------------------

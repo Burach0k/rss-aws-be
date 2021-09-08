@@ -2,6 +2,9 @@ service: lmbd1
 
 frameworkVersion: "2"
 
+plugins:
+  - serverless-dotenv-plugin
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -42,6 +45,22 @@ functions:
       - http:
           method: get
           path: /products
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+            allowCredentials: false
+
+  product:
+    handler: dist/product.product
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/product.js"
+    events:
+      - http:
+          method: post
+          path: /product
           cors:
             origin: "*"
             headers:
