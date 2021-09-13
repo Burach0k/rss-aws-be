@@ -3,7 +3,7 @@ import { Client, QueryConfig, QueryResult } from 'pg';
 const { PG_HOST, PG_PASSWORD, PG_PORT, PG_USERNAME, PG_DATABASE } = process.env;
 
 export class DataBase {
-  private static createClient = () => new Client({
+  public static createClient = () => new Client({
     user: PG_USERNAME,
     host: PG_HOST,
     port: +PG_PORT,

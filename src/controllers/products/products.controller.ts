@@ -25,7 +25,7 @@ export class ProductsController {
   @StatusCode()
   // @Body()
   public async addProduct(product: Omit<Product, "id">): Promise<any> {
-    const productId = await this.productsService.addProduct(product);
+    const productId = await this.productsService.addProductAndStock(product);
     return { productId };
   }
 }

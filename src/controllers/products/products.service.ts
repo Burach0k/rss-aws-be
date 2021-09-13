@@ -22,18 +22,31 @@ export class ProductsService {
     ).then(result => result.rows);
   }
 
-  public addProduct({ title, description, price, count = 0 }: Omit<Product, "id">): Promise<number> {
-    return DataBase.query<{ product_id: number }>(`
-      WITH product as (
-        INSERT INTO PRODUCTS (id, title, description, price)
+  public async addProductAndStock({ title, description, price, count = 0 }: Omit<Product, "id">) {
+    const client = DataBase.createClient();
+
+    try {
+      await client.connect();
+      
+      await client.query('BEGIN');
+
+      const productId: string = await client.query(
+        `INSERT INTO PRODUCTS (id, title, description, price)
         VALUES(uuid_generate_v1(), $1, $2, $3)
-        RETURNING id
-      )
-      INSERT INTO STOCKS (product_id, count)
-      VALUES(
-        (SELECT product.id FROM product), $4
-      ) RETURNING product_id;`,
-      [title, description, price, count]
-    ).then(result => result.rows[0].product_id);
+        RETURNING id;`, [title, description, price]
+      ).then(result => result.rows[0].product_id);
+
+      await client.query(
+        `INSERT INTO STOCKS (product_id, count)
+        VALUES($1, $2);`, [productId, count]
+      );
+
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.end();
+    }
   }
 }
