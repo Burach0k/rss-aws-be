@@ -1,7 +1,9 @@
 openapi: 3.0.0
 info: 
   title: Service for products page
-  version: 1.0.0
+  version: 2.0.0
+
+x-amazon-apigateway-request-validator: params-only
 
 components:
   schemas:

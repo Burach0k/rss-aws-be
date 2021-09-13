@@ -1,7 +1,7 @@
 import { ProductsController } from "./products.controller";
 import { ProductsService } from './products.service';
 
-describe("Test products service", () => {
+xdescribe("Test products service", () => {
   const productsService = new ProductsService();
 
   test("return product if set exist id", () => {
@@ -29,7 +29,7 @@ describe("Test products service", () => {
   });
 });
 
-describe("Test products controller", () => {
+xdescribe("Test products controller", () => {
   const productsController = new ProductsController();
 
   test("return product if set exist id", () => {
