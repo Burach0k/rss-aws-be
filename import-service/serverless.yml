@@ -1,0 +1,54 @@
+service: import
+
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: eu-west-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action: "s3:*"
+      Resource:
+        - arn:aws:s3:::import-service-task5/*
+
+package:
+  individually: true
+  patterns:
+    - "!**"
+    - "./dist"
+
+functions:
+  importProductsFile:
+    handler: dist/importProductsFile.importProductsFile
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/importProductsFile.js"
+    events:
+      - http:
+          method: get
+          path: /import
+          request:
+            parameters:
+              querystrings:
+                name: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+            allowCredentials: false
+
+  importFileParser:
+      handler: dist/importFileParser.importFileParser
+      package:
+        patterns:
+          - "!dist/**"
+          - "dist/importFileParser.js"
+      events:
+        - s3:
+            bucket: import-service-task5
+            event: s3:ObjectCreated:*
+            existing: true

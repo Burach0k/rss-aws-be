@@ -1,7 +1,7 @@
 "use strict";
 
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { ProductsController } from "../controllers/products/products.controller";
+import { ProductsController } from "../controller/products.controller";
 
 const productsController = new ProductsController();
 

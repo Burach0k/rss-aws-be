@@ -1,8 +1,8 @@
 import { ProductsService } from "./products.service";
-import { Log } from "../../utils/log.decorator";
-import { Product } from "../../dto/product.dto";
-import { StatusCode } from "../../utils/status-code.decorator";
-import { Body } from "../../utils/body.decorator";
+import { Log } from "../utils/log.decorator";
+import { Product } from "../dto/product.dto";
+import { StatusCode } from "../utils/status-code.decorator";
+import { Body } from "../utils/body.decorator";
 
 export class ProductsController {
   private productsService: ProductsService = new ProductsService();
@@ -27,5 +27,19 @@ export class ProductsController {
   public async addProduct(product: Omit<Product, "id">): Promise<any> {
     const productId = await this.productsService.addProductAndStock(product);
     return { productId };
+  }
+
+  @Log()
+  @StatusCode()
+  // @Body()
+  public async addProducts(products: Omit<Product, "id">[]): Promise<any> {
+    const res = [];
+
+    for (const index in products) {
+      const productId = await this.productsService.addProductAndStock(products[index]);
+      res.push(productId)
+    }
+
+    return res;
   }
 }
