@@ -1,5 +1,5 @@
-import { DataBase } from "../../db";
-import { Product } from "../../dto/product.dto";
+import { DataBase } from "../db";
+import { Product } from "../dto/product.dto";
 
 export class ProductsService {
 
@@ -27,14 +27,14 @@ export class ProductsService {
 
     try {
       await client.connect();
-      
+
       await client.query('BEGIN');
 
       const productId: string = await client.query(
         `INSERT INTO PRODUCTS (id, title, description, price)
         VALUES(uuid_generate_v1(), $1, $2, $3)
         RETURNING id;`, [title, description, price]
-      ).then(result => result.rows[0].product_id);
+      ).then(result => result.rows[0].id);
 
       await client.query(
         `INSERT INTO STOCKS (product_id, count)

@@ -66,3 +66,19 @@ functions:
             headers:
               - Content-Type
             allowCredentials: false
+
+  products:
+    handler: dist/products.products
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/products.js"
+    events:
+      - http:
+          method: post
+          path: /products
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+            allowCredentials: false
