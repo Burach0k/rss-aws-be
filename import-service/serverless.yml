@@ -1,4 +1,4 @@
-service: import
+service: import-3
 
 frameworkVersion: "2"
 
@@ -13,6 +13,54 @@ provider:
       Action: "s3:*"
       Resource:
         - arn:aws:s3:::import-service-task5/*
+    - Effect: Allow
+      Action: "sqs:*"
+      Resource:
+        - Fn::GetAtt: [ SQSQueue, Arn ]
+    - Effect: Allow
+      Action: "sns:*"
+      Resource:
+        Ref: SNSTopic
+  environment:
+    SQS_URL:
+      Ref: SQSQueue
+    SNS_ARN:
+      Ref: SNSTopic
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: queue-task-6
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: queue-task-6
+    SNSSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: burak_andrej@mail.ru
+        Protocol: email
+        TopicArn:
+          Ref: SNSTopic
+        FilterPolicy:
+          price:
+            - numeric:
+              - '>'
+              - 100
+    SNSSubscriptionn:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: burak_andrej2@mail.ru
+        Protocol: email
+        TopicArn:
+          Ref: SNSTopic
+        FilterPolicy:
+          price:
+            - numeric:
+              - '<'
+              - 100
 
 package:
   individually: true
@@ -52,3 +100,33 @@ functions:
             bucket: import-service-task5
             event: s3:ObjectCreated:*
             existing: true
+
+  catalogItemsQueue:
+    handler: dist/catalogItemsQueue.catalogItemsQueue
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/catalogItemsQueue.js"
+    events:
+      - http:
+          method: post
+          path: /catalogItemsQueue
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+            allowCredentials: false
+
+  catalogBatchProcess:
+    handler: dist/catalogBatchProcess.catalogBatchProcess
+    package:
+      patterns:
+        - "!dist/**"
+        - "dist/catalogBatchProcess.js"
+    events:
+      - sqs:
+          batchSize: 5
+          arn:
+           Fn::GetAtt:
+            - SQSQueue
+            - Arn

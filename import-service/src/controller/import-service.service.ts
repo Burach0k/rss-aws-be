@@ -34,16 +34,34 @@ export class ImportService {
       s3.getObject({ Bucket: this.Bucket, Key: fileName })
         .createReadStream()
         .pipe(csv())
-        .on("data", (data) => csvDataList.push(data))
+        .on("data", (data) => {
+          data.price = +data.price;
+          data.count = +data.count;
+          csvDataList.push(data)
+        })
         .on("error", reject)
         .on("end", async () => {
-          await this.sendFile(csvDataList);
+          await this.sendToCatalogItemsQueue(csvDataList);
           resolve({ fileName });
         });
     });
   }
 
-  private sendFile(csvDataList: any[]) {
+  public sendToCatalogItemsQueue(csvDataList) {
+    return fetch(
+      "https://uevyoxihci.execute-api.eu-west-1.amazonaws.com/dev/catalogItemsQueue",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(csvDataList),
+      }
+    )
+  }
+
+  public sendFile(csvDataList: any[]) {
     return fetch(
       "https://1ztz8u9329.execute-api.eu-west-1.amazonaws.com/dev/products",
       {
@@ -54,7 +72,7 @@ export class ImportService {
         },
         body: JSON.stringify(csvDataList),
       }
-    ).catch(console.log);
+    )
   }
 
   private moveBucketFiles(parseResult: any[]): Promise<any[]> {
@@ -76,9 +94,9 @@ export class ImportService {
         },
         (error) => {
             if (!error) {
-                s3.deleteObject({ Bucket: this.Bucket, Key: fileInfo.fileName }, resolve)
+              s3.deleteObject({ Bucket: this.Bucket, Key: fileInfo.fileName }, resolve)
             } else {
-                reject(error);
+              reject(error);
             }
         }
       );
