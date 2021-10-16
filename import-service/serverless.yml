@@ -62,6 +62,16 @@ resources:
               - '<'
               - 100
 
+    GatewayResponseDefault4XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+
 package:
   individually: true
   patterns:
@@ -83,11 +93,19 @@ functions:
             parameters:
               querystrings:
                 name: true
-          cors:
-            origin: "*"
-            headers:
-              - Content-Type
-            allowCredentials: false
+          cors: true
+          authorizer:
+            name: tokenAuthorizer
+            arn:
+              !Join
+                - ':'
+                - - 'arn:aws:lambda'
+                  - !Ref AWS::Region
+                  - !Ref AWS::AccountId
+                  - 'function:authorization-service-dev-basicAuthorizer'
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: token
 
   importFileParser:
       handler: dist/importFileParser.importFileParser
